@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
+using System;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace AnalogClock
 {
@@ -15,34 +11,40 @@ namespace AnalogClock
         private float minutePointerScale = 0.7f;
         private float secondPointerScale = 0.95f;
 
+        private int FPS = 3;
+
         public void Run()
         {
             while (_isRunning)
             {
-                //Clear screen, also assuming that it starts at 0,0 since while loop should end with setting cursor pos to 0
+                // Clear screen, also assuming that it starts at 0,0 since while loop should end with setting cursor pos to 0
+                // Why not use Console.Clear()? because it's dogshit and causes flickering :anger:
                 for (int y = 0; y < Console.WindowHeight; y++)
                 {
                     Console.WriteLine(new string(' ', Console.WindowWidth));
                 }
                 Console.SetCursorPosition(0, 0);
 
-                int maxSize = (Console.WindowHeight < Console.WindowWidth * 2 ? Console.WindowHeight : Console.WindowWidth) / 2;
+                
+                int maxSize = (Console.WindowHeight < Console.WindowWidth / 2 ? Console.WindowHeight : Console.WindowWidth / 2) / 2;
                 DateTime timeNow = DateTime.Now;
 
+                #if DEBUG // We only want to write this as debug information
                 Console.WriteLine($"{timeNow.Hour}:{timeNow.Minute}:{timeNow.Second}");
+                #endif
 
                 #region Draw Sphere
                 int perimiter = (int)Math.Round(Math.PI * maxSize * 2);
                 float degreesPerUnit = (float)360 / (float)perimiter;
                 for (int i = 0; i < perimiter; i++)
                 {
+                    // Calculation for X and Y source from here: https://stackoverflow.com/a/43642346
                     double x = maxSize * Math.Sin(Math.PI * 2 * (degreesPerUnit * i) / 360);
                     double y = maxSize * Math.Cos(Math.PI * 2 * (degreesPerUnit * i) / 360);
 
                     Console.SetCursorPosition((maxSize*2)+(int)Math.Round(x*2), maxSize+(int)Math.Round(y));
                     Console.Write("#");
                 }
-
                 #endregion
 
                 #region Draw Pointers
@@ -84,7 +86,7 @@ namespace AnalogClock
                 }
                 #endregion
 
-                #if DEBUG //Write numbers on circle
+                #if DEBUG // Write numbers on the clock
                 for (int i = 1; i < 13; i++)
                 {
                     double degreesPerNum = 360 / 12;
@@ -98,10 +100,10 @@ namespace AnalogClock
                 #endif
 
                 Console.SetCursorPosition(maxSize*2, maxSize);
-                Console.Write("O"); //Write knob in centre
-                Console.SetCursorPosition(0, 0); //Reset position so that ugly thing isn't right where I'm looking...
+                Console.Write("O"); // Write knob in centre
+                Console.SetCursorPosition(0, 0); // Reset position so that ugly thing isn't right where I'm looking...
 
-                Thread.Sleep(1000/3); //FPS conversion
+                Thread.Sleep(1000/FPS); // FPS conversion
             }
         }
     }
